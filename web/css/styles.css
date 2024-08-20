@@ -1,0 +1,390 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+}
+
+.table-container {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-wrapper {
+    max-height: 1000px; /* max height for vertical scroll */
+    overflow-y: auto;  /* Enables vertical scroll */
+    overflow-x: auto;  /* Enables horizontal scroll */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    min-width: 8000px; /*the min-width for horizontal scroll */
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    vertical-align: top;
+    word-wrap: break-word;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+td {
+    border-bottom: 1px solid #ddd;
+    position: relative;
+}
+
+td .text {
+    display: inline-block;
+    width: 100%;
+    padding: 8px;
+    word-wrap: break-word;
+}
+
+td .edit-input {
+    display: none;
+    width: calc(100% - 16px);
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    resize: none;
+}
+
+td .application-dropdown {
+    width: calc(100% - 16px);
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+td:focus-within .edit-input {
+    display: block;
+}
+
+td:focus-within .text {
+    display: none;
+}
+
+td:hover {
+    background-color: #f1f1f1;
+}
+
+.buttons {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.buttons button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.buttons button:hover {
+    background-color: #45a049;
+}
+
+.edit-button, .confirm-button, .cancel-button, .delete-button, .details-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+}
+
+.edit-button .fa-pencil {
+    font-size: 1.2em;
+    color: orange;
+}
+
+.confirm-button {
+    background-color: blue;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.confirm-button:hover {
+    background-color: #357ae8;
+}
+
+.cancel-button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.cancel-button:hover {
+    background-color: #c0392b;
+}
+
+.delete-button .fa-trash {
+    font-size: 1.2em;
+    color: #e74c3c;
+}
+
+.delete-button:hover .fa-trash {
+    color: #c0392b;
+}
+
+.details-button .fa-info-circle {
+    font-size: 1.2em;
+    color: #00bcd4;
+}
+
+.details-button:hover .fa-info-circle {
+    color: #0097a7;
+}
+
+.dialog {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.dialog-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.dialog-actions {
+    margin-top: 20px;
+}
+
+.dialog-actions button {
+    margin: 0 10px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.dialog-actions .dialog-confirm-button {
+    background-color: blue;
+}
+
+.dialog-actions .cancel-button {
+    background-color: #e74c3c;
+}
+
+.dialog-actions .cancel-button:hover {
+    background-color: #c0392b;
+}
+
+.dialog-actions .dialog-confirm-button:hover {
+    background-color: #357ae8;
+}
+
+.filter-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.filter-container label {
+    margin-right: 10px;
+}
+
+.filter-container select,
+.filter-container input {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin-right: 20px;
+    margin-bottom: 10px;
+    width: 200px;
+}
+
+/* Bottom Sheet Styles */
+#detailsBottomSheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    max-height: 80%;
+    overflow-y: auto;
+    padding: 20px;
+    display: none;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.bottom-sheet-content {
+    white-space: pre-wrap; /* Preserve line breaks and wrap long text */
+    word-wrap: break-word; /* Break long words onto the next line */
+    margin-right: 40px; /* Space for the close button */
+}
+
+#closeBottomSheet {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.edit-details-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-details-button:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+.edit-details-button:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+/* Edit Details Dialog */
+.modern-dialog {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    min-width: 300px;
+    max-width: 90%;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+.dialog-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+}
+
+.dialog-content h3 {
+    margin: 0 0 10px 0;
+    text-align: center;
+    color: #333;
+    font-size: 1.2em;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+}
+
+.input-group label {
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+textarea, input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+textarea {
+    height: 80px;
+    resize: vertical;
+    min-height: 80px;
+    max-height: 200px;
+}
+
+textarea:focus, input:focus {
+    border-color: #007BFF;
+}
+
+.dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.dialog-cancel-button, .dialog-save-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.dialog-cancel-button {
+    background-color: #f44336;
+    color: white;
+}
+
+.dialog-save-button {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.dialog-cancel-button:hover {
+    background-color: #d32f2f;
+}
+
+.dialog-save-button:hover {
+    background-color: #388e3c;
+}
