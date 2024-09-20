@@ -64,6 +64,8 @@
     </div>
     <div class="buttons">
         <button>+</button>
+        <!-- Button for importing CSV file -->
+        <button onclick="window.location.href='/TimeSheetApp/importcsv.jsp'">Import CSV</button>
     </div>
 
     <div id="passwordDialog" class="dialog">
