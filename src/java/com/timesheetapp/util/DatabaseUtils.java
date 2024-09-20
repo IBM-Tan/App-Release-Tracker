@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.timesheetapp.util;
 
 import java.sql.*;
@@ -11,10 +8,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-/**
- *
- * @author s27540
- */
 public class DatabaseUtils {
 
 
@@ -29,6 +22,7 @@ public class DatabaseUtils {
         Class.forName("com.ibm.db2.jcc.DB2Driver");
         IniEditor cnfgFile = new IniEditor();
         cnfgFile.load("c:/data/ini/tandb.ini");
+        //cnfgFile.load("/frc/ini/frcmg.ini");
         String host = cnfgFile.get("HostDatabase", "HOST");
         String port = cnfgFile.get("HostDatabase", "PORT");
         String dsn = cnfgFile.get("HostDatabase", "DSN");

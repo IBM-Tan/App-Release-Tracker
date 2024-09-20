@@ -24,6 +24,8 @@
             <option value="SWEEP">SWEEP</option>
             <option value="Account Register">Account Register</option>
             <option value="NSIP">NSIP</option>
+            <option value="MoneyGram">MoneyGram</option>
+            <option value="RIA">RIA</option>
         </select>
         <!-- HTML for filtering -->
         <label for="filterDay">Day:</label>
@@ -44,14 +46,14 @@
         <table id="timesheetTable">
             <thead>
                 <tr>
-                    <th style="width: 10%;">EPIC</th>
-                    <th style="width: 10%;">Feature</th>
-                    <th style="width: 10%;">Application</th>
-                    <th style="width: 25%;">UR Description</th>
-                    <th style="width: 10%;">Release</th>
-                    <th style="width: 15%;">Change No.</th>
-                    <th style="width: 10%;">Remarks</th>
-                    <th style="width: 10%;">Actions</th>
+                    <th style="width: 6%;">EPIC</th>
+                    <th style="width: 6%;">Feature</th>
+                    <th style="width: 9%;">Application</th>
+                    <th style="width: 45%;">UR Description</th>
+                    <th style="width: 8%;">Release</th>
+                    <th style="width: 9%;">Change No.</th>
+                    <th style="width: 8%;">Effort</th>
+                    <th style="width: 9%;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -91,7 +93,7 @@
         <span id="closeBottomSheet">&times;</span>
         <div class="bottom-sheet-content">
             <p><strong>Scope of Work:</strong> <span id="scopeWorkDisplay"></span></p>
-            <p><strong>Estimation Effort:</strong> <span id="estimationEffortDisplay"></span></p>
+            <p><strong>Remarks:</strong> <span id="remarksDisplay"></span></p>
             <p><strong>Box Path:</strong> <span id="boxPathDisplay"></span></p>
         </div>
     </div>
@@ -106,8 +108,8 @@
                 <textarea id="dialogScopeInput"></textarea>
             </div>
             <div class="input-group">
-                <label for="dialogEffortInput">Estimation Effort:</label>
-                <input type="text" id="dialogEffortInput" class="small-input">
+                <label for="dialogRemarksInput">Remarks:</label>
+                <input type="text" id="dialogRemarksInput" class="small-input">
             </div>
             <div class="input-group">
                 <label for="dialogBoxPathInput">Box Path:</label>

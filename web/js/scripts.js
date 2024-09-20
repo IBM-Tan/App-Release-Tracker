@@ -1,11 +1,11 @@
 document.addEventListener("DOMContentLoaded", function() {
     let originalScope = "";
-    let originalEffort = "";
+    let originalRemarks = "";
     let originalBoxPath = "";
     
     //fetch and load timesheet entries
     function loadTimesheetEntries() {
-    fetch('http://localhost:8081/TimeSheetApp/timesheet')
+    fetch('/TimeSheetApp/timesheet')
         .then(response => response.json())
         .then(data => {
             const tbody = document.getElementById('timesheetTable').getElementsByTagName('tbody')[0];
@@ -23,16 +23,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // create a new row based on an entry
     function createRow(entry) {
-        console.log("Box Path:", entry.boxPath); 
         
         const tr = document.createElement('tr');
         tr.setAttribute('data-id', entry.id);  // Set the data-id attribute
         tr.setAttribute('data-scope', entry.workscope || "No scope provided.");
-        tr.setAttribute('data-effort', entry.effort || "No effort provided.");
+        tr.setAttribute('data-remarks', entry.remarks || "No remarks provided.");
         tr.setAttribute('data-boxpath', entry.boxPath);
 
 
-        const columns = ["epic", "feature", "application", "ur_description", "release", "change_no", "remarks"];
+        const columns = ["epic", "feature", "application", "ur_description", "release", "change_no", "effort"];
         columns.forEach((column, index) => {
             const newCell = tr.insertCell();
             const value = entry[column] || '';
@@ -53,6 +52,8 @@ document.addEventListener("DOMContentLoaded", function() {
                         <option value="SWEEP">SWEEP</option>
                         <option value="Account Register">Account Register</option>
                         <option value="NSIP">NSIP</option>
+                        <option value="MoneyGram">MoneyGram</option>
+                        <option value="RIA">RIA</option>
                     </select>
                 `;
                 newCell.querySelector('select').value = value; // Set the correct value for the dropdown
@@ -149,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function addRow() {
         const table = document.getElementById("timesheetTable").getElementsByTagName('tbody')[0];
         const newRow = table.insertRow();
-        const columns = ["EPIC", "Feature", "Application", "UR Description", "Release", "Change No.", "Remarks"];
+        const columns = ["EPIC", "Feature", "Application", "UR Description", "Release", "Change No.", "Effort"];
 
         columns.forEach((column, index) => {
             const newCell = newRow.insertCell();
@@ -170,6 +171,8 @@ document.addEventListener("DOMContentLoaded", function() {
                         <option value="SWEEP">SWEEP</option>
                         <option value="Account Register">Account Register</option>
                         <option value="NSIP">NSIP</option>
+                        <option value="MoneyGram">MoneyGram</option>
+                        <option value="RIA">RIA</option>
                     </select>
                 `;
             } else if (column === "Release") {
@@ -205,14 +208,14 @@ document.addEventListener("DOMContentLoaded", function() {
         const inputs = tr.querySelectorAll('input, select, textarea');
         const newEntry = {};
 
-        const columns = ["epic", "feature", "application", "ur_description", "release", "change_no", "remarks"];
+        const columns = ["epic", "feature", "application", "ur_description", "release", "change_no", "effort"];
 
         columns.forEach((column, index) => {
             const inputElement = inputs[index];
             newEntry[column] = inputElement.value.trim();
         });
 
-        fetch('http://localhost:8081/TimeSheetApp/timesheet', {
+        fetch('/TimeSheetApp/timesheet', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -244,7 +247,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const row = button.closest('tr');
         const id = row.getAttribute('data-id');
 
-        fetch(`http://localhost:8081/TimeSheetApp/timesheet/${id}`, {
+        fetch(`/TimeSheetApp/timesheet/${id}`, {
             method: 'DELETE'
         })
         .then(response => response.json())
@@ -288,7 +291,7 @@ document.addEventListener("DOMContentLoaded", function() {
         actionCell.querySelector('.edit-details-button').style.display = 'inline-block';
 
         originalScope = row.dataset.scope || "No scope provided.";
-        originalEffort = row.dataset.effort || "No effort provided.";
+        originalRemarks = row.dataset.remarks || "No remarks provided.";
         originalBoxPath = row.dataset.boxpath || "No box path provided.";
     }
 
@@ -353,7 +356,7 @@ document.addEventListener("DOMContentLoaded", function() {
         actionCell.querySelector('.edit-details-button').style.display = 'none';
 
         row.dataset.scope = originalScope;
-        row.dataset.effort = originalEffort;
+        row.dataset.remarks = originalRemarks;
         row.dataset.boxpath = originalBoxPath;
         
         
@@ -364,7 +367,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const id = row.getAttribute('data-id');
 
     const updatedEntry = {};
-    const columns = ["epic", "feature", "application", "ur_description", "release", "change_no", "remarks"];
+    const columns = ["epic", "feature", "application", "ur_description", "release", "change_no", "effort"];
     
     row.querySelectorAll('td').forEach((cell, index) => {
         if (index < columns.length) { // Only handle the columns that need updating
@@ -383,10 +386,10 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     
     updatedEntry.workscope = row.dataset.scope;
-    updatedEntry.effort = row.dataset.effort;
+    updatedEntry.remarks = row.dataset.remarks;
     updatedEntry.boxPath = row.dataset.boxpath;
 
-    fetch(`http://localhost:8081/TimeSheetApp/timesheet/${id}`, {
+    fetch(`/TimeSheetApp/timesheet/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
@@ -428,13 +431,13 @@ document.addEventListener("DOMContentLoaded", function() {
     const saveButton = dialog.querySelector('.dialog-save-button');
 
     const scopeInput = dialog.querySelector('#dialogScopeInput');
-    const effortInput = dialog.querySelector('#dialogEffortInput');
+    const remarksInput = dialog.querySelector('#dialogRemarksInput');
     const boxPathInput = dialog.querySelector('#dialogBoxPathInput');
 
     const row = button.closest('tr');
 
     scopeInput.value = row.dataset.scope || "No scope provided.";
-    effortInput.value = row.dataset.effort || "No effort provided.";
+    remarksInput.value = row.dataset.remarks || "No remarks provided.";
     boxPathInput.value = row.dataset.boxpath || "No box path provided.";
 
     cancelButton.onclick = function() {
@@ -443,7 +446,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     saveButton.onclick = function() {
         row.dataset.scope = scopeInput.value;
-        row.dataset.effort = effortInput.value;
+        row.dataset.remarks = remarksInput.value;
         row.dataset.boxpath = boxPathInput.value;
 
         dialog.style.display = 'none';
@@ -454,14 +457,14 @@ document.addEventListener("DOMContentLoaded", function() {
         const row = button.closest('tr');
 
         const scopeOfWork = row.dataset.scope || "No scope provided.";
-        const estimationEffort = row.dataset.effort || "No effort provided.";
+        const remarks = row.dataset.remarks || "No remarks provided.";
         const boxPath = row.dataset.boxpath || "No box path provided.";
 
         const bottomSheet = document.getElementById('detailsBottomSheet');
 
         bottomSheet.querySelector('.bottom-sheet-content').innerHTML = `
             <p><strong>Scope of Work:</strong> ${scopeOfWork}</p>
-            <p><strong>Estimation Effort:</strong> ${estimationEffort}</p>
+            <p><strong>Remarks:</strong> ${remarks}</p>
             <p><strong>Box Path:</strong> ${boxPath}</p>
         `;
 

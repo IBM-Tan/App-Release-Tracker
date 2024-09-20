@@ -1,9 +1,7 @@
 package com.timesheetapp.servlet;
 
-
 import com.timesheetapp.util.DatabaseUtils;
 import java.io.BufferedReader;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -17,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -29,9 +26,13 @@ public class TimeSheetServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String pathInfo = request.getPathInfo();
+        // Set request and response encoding to UTF-8
+        request.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
         PrintWriter out = response.getWriter();
+        String pathInfo = request.getPathInfo();
 
         if (pathInfo == null || pathInfo.equals("/")) {
             try {
@@ -60,90 +61,94 @@ public class TimeSheetServlet extends HttpServlet {
     }
 
     private void getAllTimesheetEntries(HttpServletResponse response, PrintWriter out) throws Exception {
-    Connection conn = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
 
-    try {
-        conn = new DatabaseUtils().createConnection();
-        String query = "SELECT * FROM TIMESHEETDB.timesheet_entries";
-        ps = conn.prepareStatement(query);
-        rs = ps.executeQuery();
-        StringBuilder json = new StringBuilder("[");
-        while (rs.next()) {
-            json.append("{")
-                .append("\"id\":").append(rs.getInt("id")).append(",")
-                .append("\"epic\":\"").append(rs.getString("epic")).append("\",")
-                .append("\"feature\":\"").append(rs.getString("feature")).append("\",")
-                .append("\"application\":\"").append(rs.getString("application")).append("\",")
-                .append("\"ur_description\":\"").append(rs.getString("ur_description")).append("\",")
-                .append("\"release\":\"").append(rs.getString("release_date")).append("\",")
-                .append("\"change_no\":\"").append(rs.getString("change_no")).append("\",")
-                .append("\"remarks\":\"").append(rs.getString("remarks")).append("\",")
-                .append("\"workscope\":\"").append(rs.getString("workscope")).append("\",")
-                .append("\"effort\":\"").append(rs.getString("effort")).append("\",")
-                .append("\"boxPath\":\"").append(rs.getString("boxPath")).append("\"")
-                .append("},");
-        }
-        if (json.charAt(json.length() - 1) == ',') {
-            json.deleteCharAt(json.length() - 1);
-        }
-        json.append("]");
-        out.print(json.toString());
-        out.flush();
-    } catch (SQLException e) {
-        LOGGER.log(Level.SEVERE, "SQL Error while retrieving all timesheet entries", e);
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        out.print("{\"error\": \"Failed to retrieve timesheet data.\"}");
-    } finally {
-        closeResources(rs, ps, conn);
-    }
-}
-
-private void getTimeSheetEntryById(String entryId, HttpServletResponse response, PrintWriter out) throws Exception {
-    Connection conn = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-
-    try {
-        conn = new DatabaseUtils().createConnection();
-        String query = "SELECT * FROM TIMESHEETDB.timesheet_entries WHERE id = ?";
-        ps = conn.prepareStatement(query);
-        ps.setInt(1, Integer.parseInt(entryId));
-        rs = ps.executeQuery();
-
-        if (rs.next()) {
-            String json = "{"
-                + "\"id\":" + rs.getInt("id") + ","
-                + "\"epic\":\"" + rs.getString("epic") + "\","
-                + "\"feature\":\"" + rs.getString("feature") + "\","
-                + "\"application\":\"" + rs.getString("application") + "\","
-                + "\"ur_description\":\"" + rs.getString("ur_description") + "\","
-                + "\"release\":\"" + rs.getString("release_date") + "\","
-                + "\"change_no\":\"" + rs.getString("change_no") + "\","
-                + "\"remarks\":\"" + rs.getString("remarks") + "\","
-                + "\"workscope\":\"" + rs.getString("workscope") + "\","
-                + "\"effort\":\"" + rs.getString("effort") + "\","
-                + "\"boxPath\":\"" + rs.getString("boxPath") + "\""
-                + "}";
-            out.print(json);
+        try {
+            conn = new DatabaseUtils().createConnection();
+            String query = "SELECT * FROM TIMESHEETDB.timesheet_entries";
+            ps = conn.prepareStatement(query);
+            rs = ps.executeQuery();
+            StringBuilder json = new StringBuilder("[");
+            while (rs.next()) {
+                json.append("{")
+                    .append("\"id\":").append(rs.getInt("id")).append(",")
+                    .append("\"epic\":\"").append(escapeJson(rs.getString("epic"))).append("\",")
+                    .append("\"feature\":\"").append(escapeJson(rs.getString("feature"))).append("\",")
+                    .append("\"application\":\"").append(escapeJson(rs.getString("application"))).append("\",")
+                    .append("\"ur_description\":\"").append(escapeJson(rs.getString("ur_description"))).append("\",")
+                    .append("\"release\":\"").append(escapeJson(rs.getString("release_date"))).append("\",")
+                    .append("\"change_no\":\"").append(escapeJson(rs.getString("change_no"))).append("\",")
+                    .append("\"remarks\":\"").append(escapeJson(rs.getString("remarks"))).append("\",")
+                    .append("\"workscope\":\"").append(escapeJson(rs.getString("workscope"))).append("\",")
+                    .append("\"effort\":\"").append(escapeJson(rs.getString("effort"))).append("\",")
+                    .append("\"boxPath\":\"").append(escapeJson(rs.getString("boxPath"))).append("\"")
+                    .append("},");
+            }
+            if (json.charAt(json.length() - 1) == ',') {
+                json.deleteCharAt(json.length() - 1);
+            }
+            json.append("]");
+            out.print(json.toString());
             out.flush();
-        } else {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            out.print("{\"error\": \"Timesheet entry not found.\"}");
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQL Error while retrieving all timesheet entries", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{\"error\": \"Failed to retrieve timesheet data.\"}");
+        } finally {
+            closeResources(rs, ps, conn);
         }
-    } catch (SQLException e) {
-        LOGGER.log(Level.SEVERE, "SQL Error while retrieving timesheet entry by ID", e);
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        out.print("{\"error\": \"Failed to retrieve timesheet entry.\"}");
-    } finally {
-        closeResources(rs, ps, conn);
     }
-}
 
+    private void getTimeSheetEntryById(String entryId, HttpServletResponse response, PrintWriter out) throws Exception {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = new DatabaseUtils().createConnection();
+            String query = "SELECT * FROM TIMESHEETDB.timesheet_entries WHERE id = ?";
+            ps = conn.prepareStatement(query);
+            ps.setInt(1, Integer.parseInt(entryId));
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                String json = "{"
+                    + "\"id\":" + rs.getInt("id") + ","
+                    + "\"epic\":\"" + escapeJson(rs.getString("epic")) + "\","
+                    + "\"feature\":\"" + escapeJson(rs.getString("feature")) + "\","
+                    + "\"application\":\"" + escapeJson(rs.getString("application")) + "\","
+                    + "\"ur_description\":\"" + escapeJson(rs.getString("ur_description")) + "\","
+                    + "\"release\":\"" + escapeJson(rs.getString("release_date")) + "\","
+                    + "\"change_no\":\"" + escapeJson(rs.getString("change_no")) + "\","
+                    + "\"remarks\":\"" + escapeJson(rs.getString("remarks")) + "\","
+                    + "\"workscope\":\"" + escapeJson(rs.getString("workscope")) + "\","
+                    + "\"effort\":\"" + escapeJson(rs.getString("effort")) + "\","
+                    + "\"boxPath\":\"" + escapeJson(rs.getString("boxPath")) + "\""
+                    + "}";
+                out.print(json);
+                out.flush();
+            } else {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                out.print("{\"error\": \"Timesheet entry not found.\"}");
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQL Error while retrieving timesheet entry by ID", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{\"error\": \"Failed to retrieve timesheet entry.\"}");
+        } finally {
+            closeResources(rs, ps, conn);
+        }
+    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Set UTF-8 encoding for input
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
         try {
             addTimeSheetEntry(request, response);
         } catch (Exception e) {
@@ -154,38 +159,40 @@ private void getTimeSheetEntryById(String entryId, HttpServletResponse response,
     }
 
     private void addTimeSheetEntry(HttpServletRequest request, HttpServletResponse response) throws Exception {
-    Connection conn = null;
-    PreparedStatement ps = null;
-    try {
-        conn = new DatabaseUtils().createConnection();
-        String query = "INSERT INTO TIMESHEETDB.timesheet_entries (epic, feature, application, ur_description, release_date, change_no, remarks, workscope, effort, boxPath) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        ps = conn.prepareStatement(query);
-        ps.setString(1, request.getParameter("epic"));
-        ps.setString(2, request.getParameter("feature"));
-        ps.setString(3, request.getParameter("application"));
-        ps.setString(4, request.getParameter("ur_description"));
-        ps.setString(5, request.getParameter("release_date"));
-        ps.setString(6, request.getParameter("change_no"));
-        ps.setString(7, request.getParameter("remarks"));
-        ps.setString(8, request.getParameter("workscope"));
-        ps.setString(9, request.getParameter("effort"));
-        ps.setString(10, request.getParameter("boxPath"));
-        ps.executeUpdate();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = new DatabaseUtils().createConnection();
+            String query = "INSERT INTO TIMESHEETDB.timesheet_entries (epic, feature, application, ur_description, release_date, change_no, remarks, workscope, effort, boxPath) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            ps = conn.prepareStatement(query);
+            ps.setString(1, request.getParameter("epic"));
+            ps.setString(2, request.getParameter("feature"));
+            ps.setString(3, request.getParameter("application"));
+            ps.setString(4, request.getParameter("ur_description"));
+            ps.setString(5, request.getParameter("release_date"));
+            ps.setString(6, request.getParameter("change_no"));
+            ps.setString(7, request.getParameter("remarks"));
+            ps.setString(8, request.getParameter("workscope"));
+            ps.setString(9, request.getParameter("effort"));
+            ps.setString(10, request.getParameter("boxPath"));
+            ps.executeUpdate();
 
-        response.setStatus(HttpServletResponse.SC_CREATED);
-        response.getWriter().print("{\"success\": \"Timesheet entry added successfully.\"}");
-    } catch (SQLException e) {
-        LOGGER.log(Level.SEVERE, "SQL Error while adding timesheet entry", e);
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getWriter().print("{\"error\": \"Failed to add timesheet entry.\"}");
-    } finally {
-        closeResources(null, ps, conn);
+            response.setStatus(HttpServletResponse.SC_CREATED);
+            response.getWriter().print("{\"success\": \"Timesheet entry added successfully.\"}");
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQL Error while adding timesheet entry", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().print("{\"error\": \"Failed to add timesheet entry.\"}");
+        } finally {
+            closeResources(null, ps, conn);
+        }
     }
-}
-
 
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         String pathInfo = request.getPathInfo();
         if (pathInfo != null && pathInfo.length() > 1) {
             String entryId = pathInfo.substring(1);
@@ -228,8 +235,7 @@ private void getTimeSheetEntryById(String entryId, HttpServletResponse response,
             response.getWriter().print("{\"error\": \"Invalid URL.\"}");
         }
     }
-
-    protected void updateTimeSheetEntry(String entryId, String epic, String feature, String application, 
+     protected void updateTimeSheetEntry(String entryId, String epic, String feature, String application, 
                                         String urDescription, String release, String changeNo, String remarks,
                                         String workscope, String effort, String boxPath) throws SQLException, Exception {
         Connection conn = null;
@@ -251,21 +257,19 @@ private void getTimeSheetEntryById(String entryId, HttpServletResponse response,
             ps.setString(10, boxPath != null && !boxPath.isEmpty() ? boxPath : null);
             ps.setInt(11, Integer.parseInt(entryId));
 
-            int updatedRows = ps.executeUpdate();
-            System.out.println("Rows updated: " + updatedRows);
+            ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
             throw new SQLException("Error updating timesheet entry: " + e.getMessage());
         } finally {
             closeResources(null, ps, conn);
         }
     }
 
-
-
-
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         String pathInfo = request.getPathInfo();
         if (pathInfo != null && pathInfo.length() > 1) {
             String entryId = pathInfo.substring(1);
@@ -311,5 +315,18 @@ private void getTimeSheetEntryById(String entryId, HttpServletResponse response,
         } catch (SQLException ex) {
             LOGGER.log(Level.SEVERE, "Failed to close resources", ex);
         }
+    }
+
+    private String escapeJson(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\b", "\\b")
+                    .replace("\f", "\\f")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r")
+                    .replace("\t", "\\t");
     }
 }
