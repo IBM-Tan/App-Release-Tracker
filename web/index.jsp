@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ include file="navbar.jsp" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+    <div class="content-container">
     <div class="filter-container">
         <label for="filterApplication">Filter by Application:</label>
         <select id="filterApplication">
@@ -64,8 +66,6 @@
     </div>
     <div class="buttons">
         <button>+</button>
-        <!-- Button for importing CSV file -->
-        <button onclick="window.location.href='/TimeSheetApp/importcsv.jsp'">Import CSV</button>
     </div>
 
     <div id="passwordDialog" class="dialog">
@@ -122,6 +122,7 @@
                 <button class="dialog-save-button">Save</button>
             </div>
         </div>
+    </div>
     </div>
 
 
