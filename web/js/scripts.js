@@ -3,22 +3,102 @@ document.addEventListener("DOMContentLoaded", function() {
     let originalRemarks = "";
     let originalBoxPath = "";
     
-    //fetch and load timesheet entries
-    function loadTimesheetEntries() {
-    fetch('/TimeSheetApp/timesheet')
-        .then(response => response.json())
-        .then(data => {
-            const tbody = document.getElementById('timesheetTable').getElementsByTagName('tbody')[0];
-            tbody.innerHTML = ''; // Clear the table before populating
-            data.forEach(entry => {
-                const newRow = createRow(entry);
-                tbody.appendChild(newRow);
-            });
-            applyColorsToAllRows();
-            sortTableByRelease();
+     // Save the row order to the database
+    function saveRowOrderToDatabase() {
+        const rows = document.querySelectorAll("#timesheetTable tbody tr");
+        const rowOrder = Array.from(rows).map((row, index) => ({
+            id: parseInt(row.getAttribute("data-id")),  // Ensure ID is an integer
+            displayOrder: index + 1  // Start order from 1
+        }));
+
+        fetch('/TimeSheetApp/updateRowOrder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(rowOrder)
         })
-        .catch(error => console.error('Error loading timesheet entries:', error));
-}
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                console.log("Row order updated successfully");
+            } else if (data.error) {
+                console.error("Failed to update row order", data.error);
+            }
+        })
+        .catch(error => {
+            console.error("Error while updating row order:", error.message);
+        });
+    }
+
+    // Enable row dragging with drag handle
+    function enableRowDragging() {
+        const rows = document.querySelectorAll("#timesheetTable tbody tr");
+        let draggedRow = null;
+        let isSelectingText = false;
+
+        rows.forEach((row) => {
+            const dragHandle = row.querySelector('.drag-handle');  // Drag handle for each row
+
+            dragHandle.draggable = true;
+
+            dragHandle.addEventListener('dragstart', function (e) {
+                draggedRow = row;
+                row.style.opacity = '0.5';
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            dragHandle.addEventListener('dragend', function () {
+                row.style.opacity = '1';
+                draggedRow = null;
+                saveRowOrderToDatabase();  // Save order to database
+            });
+
+            row.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+
+            row.addEventListener('drop', function (e) {
+                e.preventDefault();
+                if (draggedRow && draggedRow !== this) {
+                    const tbody = document.querySelector("#timesheetTable tbody");
+                    const rowsArray = Array.from(tbody.rows);
+                    const droppedRowIndex = rowsArray.indexOf(this);
+                    const draggedRowIndex = rowsArray.indexOf(draggedRow);
+
+                    if (draggedRowIndex < droppedRowIndex) {
+                        tbody.insertBefore(draggedRow, this.nextSibling);
+                    } else {
+                        tbody.insertBefore(draggedRow, this);
+                    }
+                    saveRowOrderToDatabase();  // Save order to database
+                }
+            });
+        });
+    }
+
+    // Load timesheet entries
+    function loadTimesheetEntries() {
+        fetch('/TimeSheetApp/timesheet')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('timesheetTable').getElementsByTagName('tbody')[0];
+                tbody.innerHTML = '';  // Clear the table before populating
+                data.forEach(entry => {
+                    const newRow = createRow(entry);
+                    tbody.appendChild(newRow);
+                });
+                applyColorsToAllRows();
+                enableRowDragging();
+            })
+            .catch(error => console.error('Error loading timesheet entries:', error));
+    }
 
 
     // create a new row based on an entry
@@ -29,6 +109,11 @@ document.addEventListener("DOMContentLoaded", function() {
         tr.setAttribute('data-scope', entry.workscope || "No scope provided.");
         tr.setAttribute('data-remarks', entry.remarks || "No remarks provided.");
         tr.setAttribute('data-boxpath', entry.boxPath);
+        
+        // Add a drag handle column (grip icon)
+        const dragHandleCell = tr.insertCell();
+        dragHandleCell.classList.add('drag-handle');
+        dragHandleCell.innerHTML = `<i class="fas fa-grip-vertical"></i>`;
 
 
         const columns = ["epic", "feature", "application", "ur_description", "release", "change_no", "effort"];
@@ -100,30 +185,29 @@ document.addEventListener("DOMContentLoaded", function() {
         // Parse the date string into a Date object
         const date = new Date(dateString);
 
-        // Use the year and day of year to generate a unique number
+        // Get the month and year
+        const month = date.getMonth(); // 0 (January) to 11 (December)
         const year = date.getFullYear();
-        const dayOfYear = getDayOfYear(date);
 
-        // Combine year and day to get a unique number
-        const uniqueNumber = year * 1000 + dayOfYear;
+        // Predefined hues for each month to ensure distinct colors
+        const monthHues = [330, 200, 120, 60, 30, 90, 270, 150, 0, 180, 240, 300]; // Pink, Blue, Green, Yellow, Orange, etc.
 
-        // Use the unique number to generate HSL color values
-        const hue = uniqueNumber % 360;
-        const saturation = 70 + (uniqueNumber % 20); // 70-90%
-        const lightness = 75 + (uniqueNumber % 10);  // 75-85%
+        // Get the hue for the current month
+        const hue = monthHues[month];
+
+        // Adjust lightness based on the year
+        const baseLightness = 65; // Base lightness for the current year
+        const yearOffset = year % 10; // Get the last digit of the year
+        const lightness = baseLightness + (yearOffset * 3); // Lightness ranges from 65 to 95
+
+        // Set a fixed saturation for consistency
+        const saturation = 70; // Saturation at 70%
 
         return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
 
-    function getDayOfYear(date) {
-        const start = new Date(date.getFullYear(), 0, 0);
-        const diff = date - start;
-        const oneDay = 1000 * 60 * 60 * 24;
-        return Math.floor(diff / oneDay);
-    }
-
     function applyColorToRow(row) {
-        const releaseCell = row.cells[4];
+        const releaseCell = row.cells[5];
         const releaseDate = releaseCell.querySelector('.text').textContent.trim();
         if (releaseDate) {
             try {
@@ -151,6 +235,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const table = document.getElementById("timesheetTable").getElementsByTagName('tbody')[0];
         const newRow = table.insertRow();
         const columns = ["EPIC", "Feature", "Application", "UR Description", "Release", "Change No.", "Effort"];
+        
 
         columns.forEach((column, index) => {
             const newCell = newRow.insertCell();
@@ -264,36 +349,36 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
     window.editRow = function(button) {
-        const row = button.closest('tr');
-        row.querySelectorAll('td').forEach((cell, index) => {
-            if (index < 7) {
-                const textarea = cell.querySelector('.edit-input');
-                const span = cell.querySelector('.text');
-                if (textarea) {
-                    if (textarea.type === 'date' || textarea.tagName === 'SELECT') {
-                        textarea.style.display = 'block';
-                        span.style.display = 'none';
-                        textarea.value = span.innerHTML;
-                    } else {
-                        textarea.style.display = 'block';
-                        span.style.display = 'none';
-                        textarea.value = span.innerHTML.replace(/<br\s*\/?>/gi, "\n");
-                    }
+    const row = button.closest('tr');
+    row.querySelectorAll('td').forEach((cell, index) => {
+        if (index > 0 && index < 8) { // Skip the first column (drag handle)
+            const textarea = cell.querySelector('.edit-input');
+            const span = cell.querySelector('.text');
+            if (textarea) {
+                if (textarea.type === 'date' || textarea.tagName === 'SELECT') {
+                    textarea.style.display = 'block';
+                    span.style.display = 'none';
+                    textarea.value = span.innerHTML;
+                } else {
+                    textarea.style.display = 'block';
+                    span.style.display = 'none';
+                    textarea.value = span.innerHTML.replace(/<br\s*\/?>/gi, "\n");
                 }
             }
-        });
+        }
+    });
 
-        const actionCell = row.querySelector('td:last-child');
-        actionCell.querySelector('.edit-button').style.display = 'none';
-        actionCell.querySelector('.confirm-button').style.display = 'inline-block';
-        actionCell.querySelector('.cancel-button').style.display = 'inline-block';
-        actionCell.querySelector('.details-button').style.display = 'none';
-        actionCell.querySelector('.edit-details-button').style.display = 'inline-block';
+    const actionCell = row.querySelector('td:last-child');
+    actionCell.querySelector('.edit-button').style.display = 'none';
+    actionCell.querySelector('.confirm-button').style.display = 'inline-block';
+    actionCell.querySelector('.cancel-button').style.display = 'inline-block';
+    actionCell.querySelector('.details-button').style.display = 'none';
+    actionCell.querySelector('.edit-details-button').style.display = 'inline-block';
 
-        originalScope = row.dataset.scope || "No scope provided.";
-        originalRemarks = row.dataset.remarks || "No remarks provided.";
-        originalBoxPath = row.dataset.boxpath || "No box path provided.";
-    }
+    originalScope = row.dataset.scope || "No scope provided.";
+    originalRemarks = row.dataset.remarks || "No remarks provided.";
+    originalBoxPath = row.dataset.boxpath || "No box path provided.";
+}
 
     window.showEditDialog = function(button) {
         const dialog = document.getElementById('passwordDialog');
@@ -361,7 +446,6 @@ document.addEventListener("DOMContentLoaded", function() {
         
         
     }
-
     window.applyChanges = function(button) {
     const row = button.closest('tr');
     const id = row.getAttribute('data-id');
@@ -370,11 +454,11 @@ document.addEventListener("DOMContentLoaded", function() {
     const columns = ["epic", "feature", "application", "ur_description", "release", "change_no", "effort"];
     
     row.querySelectorAll('td').forEach((cell, index) => {
-        if (index < columns.length) { // Only handle the columns that need updating
+        if (index > 0 && index <= columns.length) { // Skip the drag handle column
             const textarea = cell.querySelector('.edit-input');
             const span = cell.querySelector('.text');
             if (textarea) {
-                const columnName = columns[index];
+                const columnName = columns[index - 1];  // Adjust index for skipped column
                 updatedEntry[columnName] = textarea.value.trim();
                 span.innerHTML = textarea.type === 'date' || textarea.tagName === 'SELECT'
                     ? textarea.value
@@ -418,7 +502,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     applyColorToRow(row);
-    sortTableByRelease();
+    saveRowOrderToDatabase();
 }
 
 
@@ -562,5 +646,6 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("filterDateRangeEnd").addEventListener("change", filterTable);
 
     loadTimesheetEntries();
+    enableRowDragging();
     applyColorsToAllRows();
 });

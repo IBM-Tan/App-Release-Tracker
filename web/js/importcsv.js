@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const csvForm = document.querySelector(".csv-import-form");
-    const filePathInput = document.getElementById("filePath");
+    const fileInput = document.getElementById("file");
     const dialog = document.getElementById("responseDialog");
     const dialogContent = document.getElementById("dialogContent");
     const dialogClose = document.getElementById("dialogClose");
@@ -8,18 +8,18 @@ document.addEventListener("DOMContentLoaded", function () {
     csvForm.addEventListener("submit", function (e) {
         e.preventDefault();
 
-        const filePath = filePathInput.value;
-        if (!filePath) {
-            showDialog("Please enter a valid CSV file path.");
+        const file = fileInput.files[0];
+        if (!file) {
+            showDialog("Please select a CSV file to upload.");
             return;
         }
 
+        const formData = new FormData();
+        formData.append("file", file);
+
         fetch("/TimeSheetApp/import-csv", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: `filePath=${encodeURIComponent(filePath)}`
+            body: formData
         })
         .then(response => response.json())
         .then(data => {

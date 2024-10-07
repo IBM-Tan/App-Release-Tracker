@@ -48,13 +48,14 @@
         <table id="timesheetTable">
             <thead>
                 <tr>
+                    <th style="width: 1%;"></th>
                     <th style="width: 6%;">EPIC</th>
                     <th style="width: 6%;">Feature</th>
                     <th style="width: 9%;">Application</th>
-                    <th style="width: 45%;">UR Description</th>
+                    <th style="width: 47%;">UR Description</th>
                     <th style="width: 8%;">Release</th>
                     <th style="width: 9%;">Change No.</th>
-                    <th style="width: 8%;">Effort</th>
+                    <th style="width: 5%;">Effort</th>
                     <th style="width: 9%;">Actions</th>
                 </tr>
             </thead>
@@ -111,7 +112,7 @@
             </div>
             <div class="input-group">
                 <label for="dialogRemarksInput">Remarks:</label>
-                <input type="text" id="dialogRemarksInput" class="small-input">
+                <textarea id="dialogRemarksInput"></textarea>
             </div>
             <div class="input-group">
                 <label for="dialogBoxPathInput">Box Path:</label>
@@ -124,10 +125,6 @@
         </div>
     </div>
     </div>
-
-
-
-
 
     <script src="js/scripts.js"></script>
 </body>

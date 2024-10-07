@@ -10,21 +10,20 @@
 </head>
 <body>
 
-    <!-- Container for the CSV import form -->
     <div class="content-container">
         <div class="csv-import-container">
             <h1>Import CSV Data</h1>
-            <form action="/TimeSheetApp/import-csv" method="post" class="csv-import-form">
+            <!-- Add enctype to allow file upload -->
+            <form action="/TimeSheetApp/import-csv" method="post" enctype="multipart/form-data" class="csv-import-form">
                 <div class="input-group">
-                    <label for="filePath">Enter CSV File Path:</label>
-                    <input type="text" id="filePath" name="filePath" placeholder="C:/path/to/your/file.csv" required>
+                    <label for="file">Choose CSV File:</label>
+                    <input type="file" id="file" name="file" accept=".csv" required>
                 </div>
                 <button type="submit" class="submit-button">Import CSV</button>
             </form>
         </div>
     </div>
 
-    <!-- Dialog for showing the response -->
     <div id="responseDialog" class="dialog">
         <div class="dialog-content">
             <p id="dialogContent"></p>

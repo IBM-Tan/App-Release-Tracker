@@ -21,8 +21,7 @@ public class DatabaseUtils {
     public Connection createConnection() throws Exception {
         Class.forName("com.ibm.db2.jcc.DB2Driver");
         IniEditor cnfgFile = new IniEditor();
-        cnfgFile.load("c:/data/ini/tandb.ini");
-        //cnfgFile.load("/frc/ini/frcmg.ini");
+        cnfgFile.load("/frc/ini/frcmg.ini");
         String host = cnfgFile.get("HostDatabase", "HOST");
         String port = cnfgFile.get("HostDatabase", "PORT");
         String dsn = cnfgFile.get("HostDatabase", "DSN");

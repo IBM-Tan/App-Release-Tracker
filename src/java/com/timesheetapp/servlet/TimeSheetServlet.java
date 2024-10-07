@@ -67,7 +67,7 @@ public class TimeSheetServlet extends HttpServlet {
 
         try {
             conn = new DatabaseUtils().createConnection();
-            String query = "SELECT * FROM TIMESHEETDB.timesheet_entries";
+            String query = "SELECT * FROM TIMESHEETDB.timesheet_entries ORDER BY release_date ASC, display_order ASC";
             ps = conn.prepareStatement(query);
             rs = ps.executeQuery();
             StringBuilder json = new StringBuilder("[");
