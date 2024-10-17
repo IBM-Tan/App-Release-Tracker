@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function saveRowOrderToDatabase() {
         const rows = document.querySelectorAll("#timesheetTable tbody tr");
         const rowOrder = Array.from(rows).map((row, index) => ({
-            id: parseInt(row.getAttribute("data-id")),  // Ensure ID is an integer
+            id: parseInt(row.getAttribute("data-id")),
             displayOrder: index + 1  // Start order from 1
         }));
 
@@ -36,7 +36,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Enable row dragging with drag handle
     function enableRowDragging() {
         const rows = document.querySelectorAll("#timesheetTable tbody tr");
         let draggedRow = null;
